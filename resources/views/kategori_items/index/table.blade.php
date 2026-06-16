@@ -1,16 +1,11 @@
-
-
 <table id="table" class="table table-striped" style="width:100%">
     <thead>
         <tr>
             <th>Kode</th>
             <th>Nama</th>
-            <th>Gambar</th>
-            <th>Jenis</th>
-            <th>Harga Beli</th>
-            <th>Harga Jual</th>
-            <th>Supplier</th>
             <th>View</th>
+            <!-- <th>Edit</th>
+            <th>Delete</th> -->
         </tr>
     </thead>
     <tbody>

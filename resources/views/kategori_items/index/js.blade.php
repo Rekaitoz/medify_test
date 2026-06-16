@@ -3,11 +3,6 @@
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-    var start_date = '';
-    var end_date = '';
-    var data_per_fetch = 500;
-    var data_fetched = 0;
-
     $(document).ready(function() {
         $('#table').DataTable({
             searching: false,
@@ -21,46 +16,33 @@
     })
 
     function getData(){
-        
         $('#loading-filter').show();
         var dataTableObj = $('#table').DataTable();
         var filter_kode = $('#filter-kode').val()
         var filter_nama = $('#filter-nama').val()
-        var filter_harga_min = $('#filter-harga-min').val()
-        var filter_harga_max = $('#filter-harga-max').val()
         dataTableObj.clear().draw();
 
         $.ajax({
-            url: '{{url("master-items/search")}}',
+            url: '{{url("kategori-items/search")}}',
             dataType: 'json',
             tryCount: 0,
             retryLimit: 3,
-            data: 'kode=' + filter_kode + '&nama=' + filter_nama + '&hargamin=' + filter_harga_min + '&hargamax=' + filter_harga_max,
+            data: 'kode=' + filter_kode + '&nama=' + filter_nama,
             success: function(results) {
                 var data = results.data
 
                 $.each(data, function(index, item) {
-                    var harga_jual = item.harga_beli + item.harga_beli * item.laba / 100;
-                    harga_jual = Math.round(harga_jual)
-                    var kode = item.kode;
+                    var viewHtml = `<a href="{{url('kategori-items/view/')}}/` + item.kode + `" class="btn btn-primary">View</a>`
+                    var editHtml = `<a href="{{url('kategori-items/form/edit/')}}/` + item.id + `" class="btn btn-info">Edit</a>`
+                    var deleteHtml = `<a href="{{url('kategori-items/delete/')}}/` + item.id + `" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this kategori?');">Delete</a>`
 
-                    var html = `<a href="{{url('master-items/view/')}}/` + kode + `" class="btn btn-primary">View</a>`
-                    var imageHtml = item.image
-                        ? `<img src="{{ url('storage') }}/` + item.image + `" alt="preview" style="width: 40px; height: 40px; object-fit: cover;">`
-                        : '-';
-
-                    var array_temp = [
+                    dataTableObj.row.add([
                         item.kode,
                         item.nama,
-                        imageHtml,
-                        item.jenis,
-                        item.harga_beli,
-                        harga_jual,
-                        item.supplier,
-                        html
-                    ];
-
-                    dataTableObj.row.add(array_temp).draw(true);
+                        viewHtml,
+                        editHtml,
+                        deleteHtml
+                    ]).draw(true);
                 });
                 $('#loading-filter').hide();
             },
@@ -72,8 +54,6 @@
                 }
                 alert('Terjadi kesalahan server, tidak dapat mengambil data')
                 $('#loading-filter').hide();
-
-                return;
             }
         })
     }

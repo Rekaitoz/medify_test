@@ -17,6 +17,7 @@
                             <td>:</td>
                             <td>{{$data->nama}}</td>
                         </tr>
+                        
                         <tr>
                             <th>Harga Beli</th>
                             <td>:</td>
@@ -41,6 +42,11 @@
                             <th>Jenis</th>
                             <td>:</td>
                             <td>{{$data->jenis}}</td>
+                        </tr>
+                        <tr>
+                            <th>Gambar</th>
+                            <td>:</td>
+                            <td><img src="{{ asset('storage/' . $data->image) }}" alt="Preview" style="max-width: 420px; max-height: 420px; object-fit: cover;"></td>
                         </tr>
                     </table>
                     <a class="btn btn-info" href="{{url('master-items/form/edit')}}/{{$data->id}}">Edit</a>

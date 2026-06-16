@@ -1,4 +1,4 @@
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     @csrf
     @if($method == 'edit')
     <div class="form-group">
@@ -10,6 +10,16 @@
     <div class="form-group">
         <label>Nama</label>
         <input type="text" class="form-control" name="nama" required  value="{{$item->nama ?? ''}}">
+    </div>
+
+    <div class="form-group">
+        <label>Gambar</label>
+        <input type="file" class="form-control" name="image" accept="image/*" @if($method == 'new') required @endif>
+        @if($method == 'edit' && !empty($item->image))
+        <div class="mt-2">
+            <img src="{{ asset('storage/' . $item->image) }}" alt="Preview" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+        </div>
+        @endif
     </div>
 
     <div class="form-group">
@@ -46,6 +56,19 @@
             <optio @if($selected == 'Umum') selected @endif>Umum</option>
             <optio @if($selected == 'ATK') selected @endif>ATK</option>
         </select>
+    </div>
+
+    @php $selectedKategoris = ($method == 'edit' && !empty($item->kategoriItems)) ? $item->kategoriItems->pluck('id')->toArray() : []; @endphp
+    <div class="form-group">
+        <label>Kategori</label>
+        <select class="form-control" name="kategori[]" multiple size="5">
+            @foreach($kategoris as $kategori)
+            <option value="{{ $kategori->id }}" @if(in_array($kategori->id, $selectedKategoris)) selected @endif>
+                {{ $kategori->kode }} - {{ $kategori->nama }}
+            </option>
+            @endforeach
+        </select>
+        <small class="text-muted">Tekan Ctrl (Windows) atau Cmd (Mac) untuk memilih lebih dari satu kategori.</small>
     </div>
 
     <button class="btn btn-primary mt-3">Submit</button>

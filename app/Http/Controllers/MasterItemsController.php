@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterItem;
+use App\Models\KategoriItem;
+use App\Exports\MasterItemsExport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class MasterItemsController extends Controller
 {
@@ -23,9 +28,10 @@ class MasterItemsController extends Controller
 
         if (!empty($kode)) $data_search = $data_search->where('kode', $kode);
         if (!empty($nama)) $data_search = $data_search->where('nama', 'LIKE', '%' . $nama . '%');
-        if (!empty($hargamin)) $data_search = $data_search->where('harga_beli', '>=', $hargamin)->where('harga_beli', '<=', $hargamax);
+        if (!empty($hargamin)) $data_search = $data_search->where('harga_beli', '>=', $hargamin);
+        if (!empty($hargamax)) $data_search = $data_search->where('harga_beli', '<=', $hargamax);
 
-        $data_search = $data_search->select('kode', 'nama', 'jenis', 'harga_beli', 'laba', 'supplier')->orderBy('id')->get();
+        $data_search = $data_search->select('kode', 'nama', 'image', 'jenis', 'harga_beli', 'laba', 'supplier')->orderBy('id')->get();
 
 
         return json_encode([
@@ -39,10 +45,11 @@ class MasterItemsController extends Controller
         if ($method == 'new') {
             $item = [];
         } else {
-            $item = MasterItem::find($id);
+            $item = MasterItem::with('kategoriItems')->find($id);
         }
         $data['item'] = $item;
         $data['method'] = $method;
+        $data['kategoris'] = KategoriItem::orderBy('nama')->get();
         return view('master_items.form.index', $data);
     }
 
@@ -71,7 +78,16 @@ class MasterItemsController extends Controller
         $data_item->kode = $kode;
         $data_item->supplier = $request->supplier;
         $data_item->jenis = $request->jenis;
+
+        if ($request->hasFile('image')) {
+            if ($method == 'edit' && $data_item->image) {
+                Storage::disk('public')->delete($data_item->image);
+            }
+            $data_item->image = $request->file('image')->store('master_items', 'public');
+        }
+
         $data_item->save();
+        $data_item->kategoriItems()->sync($request->kategori ?? []);
 
         return redirect('master-items');
     }
@@ -80,6 +96,13 @@ class MasterItemsController extends Controller
     {
         MasterItem::find($id)->delete();
         return redirect('master-items');
+    }
+
+    public function exportExcel()
+    {
+        $filename = 'master-items-' . now()->format('Y-m-d-His') . '.xlsx';
+
+        return Excel::download(new MasterItemsExport, $filename);
     }
 
     public function updateRandomData()
